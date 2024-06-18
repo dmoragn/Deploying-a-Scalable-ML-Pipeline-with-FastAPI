@@ -66,8 +66,8 @@ def test_compute_model_metrics():
     y = np.array([1, 0, 1, 0])
     preds = np.array([1, 0, 1, 1])
     precision, recall, fbeta = compute_model_metrics(y, preds)
-    assert precision == 1.0, "Precision is not as expected"
-    assert recall == 0.6666666666666666, "Recall is not as expected"
+    assert precision == 0.6666666666666666, "Precision is not as expected"
+    assert recall == 1.0, "Recall is not as expected"
     assert fbeta == 0.8, "F-beta score is not as expected"
 
 def test_data_processing_size(processed_data):
