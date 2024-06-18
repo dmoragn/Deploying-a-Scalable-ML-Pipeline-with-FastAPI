@@ -1,28 +1,55 @@
-import pytest
-# TODO: add necessary import
+def processed_data():
+    df = pd.DataFrame(data)
+    cat_features = [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
+    X, y, encoder, lb = process_data(df, categorical_features=cat_features, label="salary", training=True)
+    return X, y, encoder, lb
 
-# TODO: implement the first test. Change the function name and input as needed
-def test_one():
+def test_train_model(processed_data):
     """
-    # add description for the first test
+    Test if the train_model function trains a RandomForestClassifier and returns the expected type of result.
     """
-    # Your code here
-    pass
+    X_train, y_train, _, _ = processed_data
+    model = train_model(X_train, y_train)
+    assert isinstance(model, RandomForestClassifier), "Model is not a RandomForestClassifier"
+    assert hasattr(model, 'predict'), "Model does not have a predict method"
 
+def test_inference(processed_data):
+    """
+    Test if the inference function returns a numpy array of predictions with the expected length.
+    """
+    X_train, y_train, _, _ = processed_data
+    model = train_model(X_train, y_train)
+    preds = inference(model, X_train)
+    assert isinstance(preds, np.ndarray), "Inference does not return a numpy array"
+    assert len(preds) == len(X_train), "The length of predictions does not match the length of input data"
 
-# TODO: implement the second test. Change the function name and input as needed
-def test_two():
+def test_compute_model_metrics():
     """
-    # add description for the second test
+    Test if the compute_model_metrics function returns expected precision, recall, and fbeta values.
     """
-    # Your code here
-    pass
+    y = np.array([1, 0, 1, 0])
+    preds = np.array([1, 0, 1, 1])
+    precision, recall, fbeta = compute_model_metrics(y, preds)
+    assert precision == 1.0, "Precision is not as expected"
+    assert recall == 0.6666666666666666, "Recall is not as expected"
+    assert fbeta == 0.8, "F-beta score is not as expected"
 
-
-# TODO: implement the third test. Change the function name and input as needed
-def test_three():
+def test_data_processing_size(processed_data):
     """
-    # add description for the third test
+    Test if the processed data has the expected size and type.
     """
-    # Your code here
-    pass
+    X, y, _, _ = processed_data
+    assert X.shape[0] == 2, "The number of samples in X is not as expected"
+    assert X.shape[1] > 0, "The number of features in X is not as expected"
+    assert len(y) == 2, "The number of samples in y is not as expected"
+    assert isinstance(X, np.ndarray), "Processed data X is not a numpy array"
+    assert isinstance(y, np.ndarray), "Processed labels y are not a numpy array"
