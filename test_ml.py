@@ -1,3 +1,30 @@
+import pytest
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from ml.data import process_data
+from ml.model import train_model, inference, compute_model_metrics, load_model
+
+# Sample data for testing
+data = {
+    "age": [37, 50],
+    "workclass": ["Private", "Self-emp-not-inc"],
+    "fnlgt": [178356, 83311],
+    "education": ["HS-grad", "Bachelors"],
+    "education-num": [10, 13],
+    "marital-status": ["Married-civ-spouse", "Married-civ-spouse"],
+    "occupation": ["Prof-specialty", "Exec-managerial"],
+    "relationship": ["Husband", "Husband"],
+    "race": ["White", "White"],
+    "sex": ["Male", "Male"],
+    "capital-gain": [0, 0],
+    "capital-loss": [0, 0],
+    "hours-per-week": [40, 13],
+    "native-country": ["United-States", "United-States"],
+    "salary": [">50K", "<=50K"]
+}
+
+@pytest.fixture
 def processed_data():
     df = pd.DataFrame(data)
     cat_features = [
