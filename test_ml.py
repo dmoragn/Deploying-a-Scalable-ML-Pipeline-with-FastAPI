@@ -89,6 +89,17 @@ def test_inference_no_exception(processed_data):
     assert isinstance(preds, np.ndarray), "Inference does not return a numpy array"
     assert len(preds) == len(X_train), "Number of predictions does not match number of samples in X_train"
 
+def test_compute_model_metrics():
+    """
+    Test if the compute_model_metrics function returns expected precision, recall, and fbeta values.
+    """
+    y = np.array([1, 0, 1, 0])
+    preds = np.array([1, 0, 1, 1])
+    precision, recall, fbeta = compute_model_metrics(y, preds)
+    assert precision == 0.6666666666666666, "Precision is not as expected"
+    assert recall == 1.0, "Recall is not as expected"
+    assert fbeta == 0.8, "F-beta score is not as expected"
+
 def test_model_serialization(processed_data):
     """
     Test if the model can be saved and loaded correctly.
