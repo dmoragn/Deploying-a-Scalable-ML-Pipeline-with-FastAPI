@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from ml.data import process_data
-from ml.model import train_model, inference, compute_model_metrics, load_model
+from ml.model import train_model, inference, compute_model_metrics, save_model, load_model
 
 # Sample data for testing
 data = {
@@ -25,8 +25,12 @@ data = {
 }
 
 @pytest.fixture
-def processed_data():
+def sample_data():
     df = pd.DataFrame(data)
+    return df
+
+@pytest.fixture
+def processed_data(sample_data):
     cat_features = [
         "workclass",
         "education",
@@ -37,27 +41,52 @@ def processed_data():
         "sex",
         "native-country",
     ]
-    X, y, encoder, lb = process_data(df, categorical_features=cat_features, label="salary", training=True)
+    X, y, encoder, lb = process_data(sample_data, categorical_features=cat_features, label="salary", training=True)
     return X, y, encoder, lb
 
-def test_train_model(processed_data):
+def test_process_data(sample_data):
     """
-    Test if the train_model function trains a RandomForestClassifier and returns the expected type of result.
+    Test if the process_data function returns the expected output types.
     """
-    X_train, y_train, _, _ = processed_data
-    model = train_model(X_train, y_train)
-    assert isinstance(model, RandomForestClassifier), "Model is not a RandomForestClassifier"
-    assert hasattr(model, 'predict'), "Model does not have a predict method"
+    cat_features = [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
+    X, y, encoder, lb = process_data(sample_data, categorical_features=cat_features, label="salary", training=True)
+    assert isinstance(X, np.ndarray), "Processed data X is not a numpy array"
+    assert isinstance(y, np.ndarray), "Processed labels y are not a numpy array"
+    assert X.shape[0] == sample_data.shape[0], "Number of samples in X does not match input data"
+    assert y.shape[0] == sample_data.shape[0], "Number of samples in y does not match input data"
 
-def test_inference(processed_data):
+def test_train_model_no_exception(processed_data):
     """
-    Test if the inference function returns a numpy array of predictions with the expected length.
+    Test if the model training raises no exceptions and returns a model.
+    """
+    X_train, y_train, _, _ = processed_data
+    try:
+        model = train_model(X_train, y_train)
+    except Exception as e:
+        pytest.fail(f"Model training raised an exception: {e}")
+    assert isinstance(model, RandomForestClassifier), "Trained model is not a RandomForestClassifier"
+
+def test_inference_no_exception(processed_data):
+    """
+    Test if the inference function raises no exceptions and returns predictions.
     """
     X_train, y_train, _, _ = processed_data
     model = train_model(X_train, y_train)
-    preds = inference(model, X_train)
+    try:
+        preds = inference(model, X_train)
+    except Exception as e:
+        pytest.fail(f"Inference raised an exception: {e}")
     assert isinstance(preds, np.ndarray), "Inference does not return a numpy array"
-    assert len(preds) == len(X_train), "The length of predictions does not match the length of input data"
+    assert len(preds) == len(X_train), "Number of predictions does not match number of samples in X_train"
 
 def test_compute_model_metrics():
     """
@@ -70,14 +99,15 @@ def test_compute_model_metrics():
     assert recall == 1.0, "Recall is not as expected"
     assert fbeta == 0.8, "F-beta score is not as expected"
 
-def test_data_processing_size(processed_data):
+def test_model_serialization(processed_data):
     """
-    Test if the processed data has the expected size and type.
+    Test if the model can be saved and loaded correctly.
     """
-    X, y, _, _ = processed_data
-    assert X.shape[0] == 2, "The number of samples in X is not as expected"
-    assert X.shape[1] > 0, "The number of features in X is not as expected"
-    assert len(y) == 2, "The number of samples in y is not as expected"
-    assert isinstance(X, np.ndarray), "Processed data X is not a numpy array"
-    assert isinstance(y, np.ndarray), "Processed labels y are not a numpy array"
-
+    X_train, y_train, _, _ = processed_data
+    model = train_model(X_train, y_train)
+    model_path = "test_model.pkl"
+    save_model(model, model_path)
+    loaded_model = load_model(model_path)
+    assert isinstance(loaded_model, RandomForestClassifier), "Loaded model is not a RandomForestClassifier"
+    assert hasattr(loaded_model, 'predict'), "Loaded model does not have a predict method"
+    os.remove(model_path)  # Clean up the saved model file
