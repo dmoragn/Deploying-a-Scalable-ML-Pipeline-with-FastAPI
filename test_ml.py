@@ -80,3 +80,4 @@ def test_data_processing_size(processed_data):
     assert len(y) == 2, "The number of samples in y is not as expected"
     assert isinstance(X, np.ndarray), "Processed data X is not a numpy array"
     assert isinstance(y, np.ndarray), "Processed labels y are not a numpy array"
+
